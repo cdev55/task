@@ -7,6 +7,11 @@ const userFormSchema = new mongoose.Schema({
         require:true,
         
     },
+    user:{
+        type:String,
+        require:true,
+        
+    },
     date:{
         type:Date,
         require:true,
@@ -14,10 +19,15 @@ const userFormSchema = new mongoose.Schema({
         
     },
     time:{
-        type:Date,
-        require:true,
+        type:String,
+        require:true
         
     },
+    // datetime:{
+    //     type:Date,
+    //     require:true,
+        
+    // },
     
 
 });

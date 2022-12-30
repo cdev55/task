@@ -18,15 +18,16 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import { useNavigate } from "react-router-dom";
 
 const Wrapper = styled(Box)`
-padding:50px;
-margin:0 auto;
+  padding: 50px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width:100%;
-  max-width:1200px;
+  width: 100%;
+  max-width: 1200px;
 `;
 const UserForm = styled(Box)`
   border: 5px dashed lightblue;
@@ -41,6 +42,12 @@ const UserForm = styled(Box)`
 const Heading = styled(Typography)`
   font-size: 50px;
   text-align: center;
+`;
+const Logout = styled(Button)`
+  float: right;
+`;
+const ShowAllButton = styled(Button)`
+  float: right;
 `;
 
 /////TableStyle///////
@@ -77,10 +84,11 @@ const rows = [
 ];
 
 const AdminPage = () => {
+  const [table, setTable] = useState("showAll");
   const memberInitialValues = { memberName: "" };
   const [member, setMember] = useState(memberInitialValues);
   const onValueChange = (e) => {
-    setMember({[e.target.name]:e.target.value});
+    setMember({ [e.target.name]: e.target.value });
   };
   const addMember = async () => {
     let res = await axios
@@ -93,16 +101,70 @@ const AdminPage = () => {
     setMember(memberInitialValues);
     return data;
   };
-/////////////////////////////
+  //////////////handleChange function///////////////
 
-const [value, setValue] = useState("");
+  // const [value, setValue] = useState("");
+  // const handleChange = (e) => {
+  //   setValue(e.target.value);
+  //   console.log(value);
+  // };
+  /////////////LogOut function/////////////////////
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    // localStorage.setItem("username",'')
+    navigate("/");
+  };
+  /////FormFetch APIcall////////////
+  const [forms, setForms] = useState([]);
+  const sendRequest = async () => {
+    const res = await axios
+      .get("http://localhost:8000/getforms")
+      .catch((err) => console.log(err));
+    const data = await res.data;
+    return data;
+  };
+  useEffect(() => {
+    sendRequest().then((data) => setForms(data.forms));
+  }, []);
+  console.log(forms);
+  ///////////////////////////////////////
+  /////FilteredFormFetch APIcall////////////
+  const [paramvalue, setParamValue] = useState("");
+
   const handleChange = (e) => {
-    setValue(e.target.value);
-    console.log(value);
+    setParamValue({ ...paramvalue, [e.target.name]: e.target.value });
+  };
+let startdate=paramvalue.fromDate;
+let enddate=paramvalue.toDate;
+  const [dforms, setDForms] = useState([]);
+  const sendRequest2 = async () => {
+    const res = await axios
+      .get(`http://localhost:8000/getformswithdate/${startdate}/${enddate}`)
+      .catch((err) => console.log(err));
+    const data = await res.data;
+    return data;
+  };
+  // useEffect(() => {
+  //   sendRequest2().then((data) => setDForms(data.dforms));
+  // }, [paramvalue]);
+  // console.log(dforms);
+  ///////////////////////////////////////
+  const toggleTable = () => {
+    table === "filtered" ? setTable("showAll") : setTable("filtered");
+  };
+  //////////////////////////
+  const handleFilter = () => {
+    toggleTable();
+    sendRequest2().then((data) => setDForms(data.dforms));
+    console.log(dforms)
   };
   return (
     <Wrapper>
       <Heading>Admin Page</Heading>
+      <Logout variant="contained" onClick={handleLogout}>
+        Logout
+      </Logout>
+
       <Box
         style={{
           margin: "50px",
@@ -124,15 +186,14 @@ const [value, setValue] = useState("");
       </Box>
       <Box
         style={{
-          
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
         }}
       >
-      <TextField
+        <TextField
           id="date"
-          name="date"
+          name="fromDate"
           label="From"
           type="date"
           defaultValue="2017-05-24"
@@ -144,7 +205,7 @@ const [value, setValue] = useState("");
         />
         <TextField
           id="date"
-          name="date"
+          name="toDate"
           label="To"
           type="date"
           defaultValue="2017-05-24"
@@ -154,13 +215,14 @@ const [value, setValue] = useState("");
           }}
           onChange={handleChange}
         />
-        <Button sx={{ margin: 2 }} variant="contained">
-          Filter
+        <Button sx={{ margin: 2 }} onClick={handleFilter} variant="contained">
+          {table==='showAll'? 'Filter':'show all'}
         </Button>
       </Box>
-
+      
       {/* ////////Table////////// */}
       <TableContainer component={Paper}>
+      {table === "showAll" ? (
         <Table sx={{ minWidth: 500 }} aria-label="customized table">
           <TableHead>
             <TableRow>
@@ -169,19 +231,38 @@ const [value, setValue] = useState("");
               <StyledTableCell align="right">Date</StyledTableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {rows.map((row) => (
-              <StyledTableRow key={row.name}>
-                <StyledTableCell >
-                  {row.name}
-                </StyledTableCell>
-                <StyledTableCell align="right">{row.calories}</StyledTableCell>
-                <StyledTableCell align="right">{row.fat}</StyledTableCell>
-                
-              </StyledTableRow>
-            ))}
-          </TableBody>
+          
+            <TableBody>
+              {forms?.map((form) => (
+                <StyledTableRow>
+                  <StyledTableCell>{form.memberName}</StyledTableCell>
+                  <StyledTableCell align="right">{form.user}</StyledTableCell>
+                  <StyledTableCell align="right">{form.date}</StyledTableCell>
+                </StyledTableRow>
+              ))}
+            </TableBody>
+            </Table>
+          ) : (
+            <Table sx={{ minWidth: 500 }} aria-label="customized table">
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>Member</StyledTableCell>
+              <StyledTableCell align="right">user</StyledTableCell>
+              <StyledTableCell align="right">Date</StyledTableCell>
+            </TableRow>
+          </TableHead>
+            <TableBody>
+              {dforms?.map((dform) => (
+                <StyledTableRow>
+                  <StyledTableCell>{dform.memberName}</StyledTableCell>
+                  <StyledTableCell align="right">{dform.user}</StyledTableCell>
+                  <StyledTableCell align="right">{dform.date}</StyledTableCell>
+                </StyledTableRow>
+              ))}
+            </TableBody>
+          
         </Table>
+        )}
       </TableContainer>
     </Wrapper>
   );

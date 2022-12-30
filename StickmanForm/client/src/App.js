@@ -9,7 +9,7 @@ import ContextProvider from "./context/ContextProvider";
 
 const App = () => {
   return (
-    // <ContextProvider>
+    <ContextProvider>
       <BrowserRouter>
         <Routes>
           <Route exact path="/" element={<Login />} />
@@ -18,7 +18,7 @@ const App = () => {
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       </BrowserRouter>
-    // </ContextProvider>
+    </ContextProvider>
   );
 };
 

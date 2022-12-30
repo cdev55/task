@@ -10,8 +10,6 @@ const Component = styled(Box)`
   box-shadow: 5px 2px 5px 2px rgb(0 0 0/ 0.6);
 `;
 
-
-
 const Wrapper = styled(Box)`
   padding: 25px 35px;
 
@@ -79,9 +77,8 @@ const Login = () => {
   const [account, toggleAccount] = useState("user");
 
   const navigate = useNavigate();
-//   const { setAccount } = useContext(LoginContext);
+  //   const { setAccount } = useContext(LoginContext);
 
-  
   useEffect(() => {
     showError(false);
   }, [userLogin]);
@@ -92,9 +89,9 @@ const Login = () => {
       : setAdminLogin({ ...adminLogin, [e.target.name]: e.target.value });
   };
 
-  const loginUser = async () => {
+  const sendRequest = async () => {
     let res = await axios
-      .post('http://localhost:8000/userlogin', {
+      .post("http://localhost:8000/userlogin", {
         email: userLogin.email,
         password: userLogin.password,
       })
@@ -103,26 +100,19 @@ const Login = () => {
     console.log(data);
     setUserLogin(userLoginInitialValues);
     // setAccount(userLogin.name);
-    navigate("/userpage");
+    // navigate("/userpage");
     return data;
-    
-    // let response = await API.userLogin(userLogin);
-    // if (response.isSuccess) {
-    //     showError('');
+  };
 
-    //     sessionStorage.setItem('accessToken', `Bearer ${response.data.accessToken}`);
-    //     sessionStorage.setItem('refreshToken', `Bearer ${response.data.refreshToken}`);
-    //     setAccount({ name: response.data.name, username: response.data.username });
-
-    
-    // } else {
-    //     showError('Something went wrong! please try again later');
-    // }
+  const loginUser = () => {
+    sendRequest()
+      .then((Data) => localStorage.setItem("username", Data.user.name))
+      .then(() => navigate("/userpage"));
   };
 
   const loginAdmin = async () => {
     let res = await axios
-      .post('http://localhost:8000/adminlogin', {
+      .post("http://localhost:8000/adminlogin", {
         email: adminLogin.email,
         password: adminLogin.password,
       })
@@ -133,16 +123,6 @@ const Login = () => {
     // setAccount(adminLogin.name);
     navigate("/adminpage");
     return data;
-    // if (response.isSuccess) {
-    //     showError('');
-    //     sessionStorage.setItem('accessToken', `Bearer ${response.data.accessToken}`);
-    //     sessionStorage.setItem('refreshToken', `Bearer ${response.data.refreshToken}`);
-    //     setAccount({ name: response.data.name, username: response.data.username });
-    //     setUserLogin(loginInitialValues);
-    //     navigate('/');
-    // } else {
-    //     showError('Something went wrong! please try again later');
-    // }
   };
 
   const toggleSignup = () => {
@@ -152,7 +132,6 @@ const Login = () => {
   return (
     <Component>
       <Box>
-        {/* <Image src={imageURL} alt="blog" /> */}
         {account === "user" ? (
           <Wrapper>
             <Heading>User Login</Heading>
@@ -165,6 +144,7 @@ const Login = () => {
             />
             <TextField
               variant="standard"
+              // type='password'
               value={userLogin.password}
               onChange={(e) => onValueChange(e)}
               name="password"
@@ -191,7 +171,6 @@ const Login = () => {
             <TextField
               variant="standard"
               value={adminLogin.email}
-
               onChange={(e) => onValueChange(e)}
               name="email"
               label="Enter Email"
@@ -199,8 +178,8 @@ const Login = () => {
 
             <TextField
               variant="standard"
+              // type='password'
               value={adminLogin.password}
-
               onChange={(e) => onValueChange(e)}
               name="password"
               label="Enter Password"

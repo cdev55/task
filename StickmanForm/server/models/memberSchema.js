@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 const memberSchema = new mongoose.Schema({
     memberName:{
         type:String,
-        require:true,
+        require:true
         
     }
     

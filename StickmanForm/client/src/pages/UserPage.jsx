@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+// import moment from 'moment';
 import axios from "axios";
 import {
   styled,
@@ -13,9 +16,14 @@ import {
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
+const name = localStorage.getItem("username");
+
 const Wrapper = styled(Box)`
   margin: auto;
   max-width: 1200px;
+`;
+const Logout = styled(Button)`
+  float:right;
 `;
 const UserForm = styled(Box)`
   border: 5px dashed lightblue;
@@ -37,6 +45,7 @@ const userFormInitialValues = {
   user: "",
   date: "",
   time: "",
+// datetime:""
 };
 
 const UserPage = () => {
@@ -65,15 +74,41 @@ const UserPage = () => {
   console.log(members);
   /////////////////////////////
 
-  const [value, setValue] = useState("");
+  //   const [value, setValue] = useState("");
+  //   const handleChange = (e) => {
+  //     setValue({ ...value, [e.target.name]: e.target.value });
+  //     console.log(e.target.value);
+  //   };
+  //////////////////////////
+  const [form, setForm] = useState(userFormInitialValues);
   const handleChange = (e) => {
-    setValue(e.target.value);
+    setForm({ ...form, [e.target.name]: e.target.value });
     console.log(e.target.value);
   };
-
+  const handleSubmit = async () => {
+    let res = await axios
+      .post("http://localhost:8000/postform", {
+        memberName: form.member,
+        user: localStorage.getItem("username"),
+        date:form.date,
+        // date:moment(form.date).format()
+        // date: new Date(form.date),
+        time:form.time,
+      })
+      .catch((error) => console.log(error));
+    const data = await res.data;
+    return data;
+  };
+  //////////////////////
+const navigate=useNavigate();
+  const handleLogout=()=>{
+    // localStorage.setItem("username",'')
+    navigate("/")
+  }
   return (
     <Wrapper>
       <Heading>User Page</Heading>
+      <Logout variant="contained" onClick={handleLogout} >Logout</Logout>
       <UserForm>
         <FormControl fullWidth>
           <InputLabel id="demo-simple-select-label">Member</InputLabel>
@@ -86,13 +121,16 @@ const UserPage = () => {
             onChange={handleChange}
           >
             {members?.map((member) => (
-              <MenuItem name="member" value={member.memberName} onClick={handleClose}>
+              <MenuItem
+                name="member"
+                value={member.memberName}
+                onClick={handleClose}
+              >
                 {member.memberName}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-
         <TextField
           id="date"
           name="date"
@@ -120,10 +158,8 @@ const UserPage = () => {
           sx={{ width: 150 }}
           onChange={handleChange}
         />
-        <p>{value}</p>
-        {/* {members?.map((member)=>(<p>{member.memberName}</p>))} */}
-
-        <Button variant="contained" sx={{ margin: 5 }}>
+        
+        <Button variant="contained" sx={{ margin: 5 }} onClick={handleSubmit}>
           Submit
         </Button>
       </UserForm>
